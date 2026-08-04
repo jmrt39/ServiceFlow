@@ -1,0 +1,53 @@
+services:
+
+  postgres:
+    image: postgres:16
+    container_name: serviceflow-postgres
+    restart: always
+    environment:
+      POSTGRES_USER: serviceflow
+      POSTGRES_PASSWORD: serviceflowpassword
+      POSTGRES_DB: serviceflow
+    ports:
+      - "5432:5432"
+    volumes:
+      - postgres_data:/var/lib/postgresql/data
+
+
+  redis:
+    image: redis:7
+    container_name: serviceflow-redis
+    restart: always
+    ports:
+      - "6379:6379"
+
+
+  backend:
+    build:
+      context: ./backend
+    container_name: serviceflow-backend
+    restart: always
+    environment:
+      DATABASE_URL: postgresql://serviceflow:serviceflowpassword@postgres:5432/serviceflow
+      REDIS_URL: redis://redis:6379
+    ports:
+      - "5000:5000"
+    depends_on:
+      - postgres
+      - redis
+
+
+  frontend:
+    build:
+      context: ./frontend
+    container_name: serviceflow-frontend
+    restart: always
+    ports:
+      - "3000:3000"
+    depends_on:
+      - backend
+
+
+volumes:
+
+  postgres_data:
