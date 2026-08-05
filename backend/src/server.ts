@@ -37,12 +37,6 @@ app.get("/api/health", (req, res) => {
 
 });
 
-app.get("/api/error",()=>{
-
-    throw new Error("Testing error handling");
-
-});
-
 //404 Handler
 app.use(notFound);
 
