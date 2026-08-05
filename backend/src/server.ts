@@ -6,6 +6,8 @@ import { env } from "./configs/env.js"
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
 
+import { prisma } from "./database/prisma.js";
+
 
 const app = express();
 
@@ -49,3 +51,39 @@ app.listen(PORT, () => {
     );
 
 });
+
+async function startServer(){
+
+    try {
+
+        await prisma.$connect();
+
+        console.log(
+            "Database connected"
+        );
+
+
+        app.listen(PORT,()=>{
+
+            console.log(
+                `${env.APP_NAME} running on port ${PORT}`
+            );
+
+        });
+
+
+    } catch(error){
+
+        console.error(
+            "Database connection failed",
+            error
+        );
+
+        process.exit(1);
+
+    }
+
+}
+
+
+startServer();
