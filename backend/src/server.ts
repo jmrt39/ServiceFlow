@@ -1,19 +1,15 @@
 import express from "express";
 import cors from "cors";
 import helmet from "helmet";
-import dotenv from "dotenv";
+import { env } from "./configs/env.js"
 
 import { notFound } from "./middleware/notFound.js";
 import { errorHandler } from "./middleware/errorHandler.js";
-import "express-async-errors";
-
-
-dotenv.config();
 
 
 const app = express();
 
-const PORT = process.env.PORT || 5000;
+const PORT = env.PORT;
 
 
 // Middleware
@@ -49,7 +45,7 @@ app.use(errorHandler);
 app.listen(PORT, () => {
 
     console.log(
-        `ServiceFlow API running on port ${PORT}`
+        `${env.APP_NAME} running on port ${PORT}`
     );
 
 });
