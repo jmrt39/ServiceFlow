@@ -1,6 +1,5 @@
 generator client {
-  provider = "prisma-client"
-  output   = "../src/generated/prisma"
+  provider = "prisma-client-js"
 }
 
 datasource db {
@@ -8,36 +7,15 @@ datasource db {
 }
 
 model Company {
+
   id String @id @default(uuid())
 
-  name String
+  name String @unique
 
-  businessType BusinessType
-
-  email String?
-
-  phone String?
-
-  website String?
-
-  timezone String @default("America/Denver")
-
-  status CompanyStatus @default(ACTIVE)
-
-  subscriptionPlan SubscriptionPlan @default(TRIAL)
-
-  stripeCustomerId String?
-
-  quickbooksRealmId String?
-
-  createdAt DateTime @default(now())
-
-  updatedAt DateTime @updatedAt
+  roles Role[]
 
   users User[]
 
-  @@index([businessType])
-  @@index([status])
 }
 
 model User {
@@ -77,6 +55,8 @@ model User {
 
   lockedUntil DateTime?
 
+  roles UserRole[]
+
   // Audit
 
   createdAt DateTime @default(now())
@@ -86,6 +66,71 @@ model User {
   @@index([companyId])
   @@index([status])
   @@index([email])
+}
+
+model Permission {
+  id String @id @default(uuid())
+
+  name String @unique
+
+  description String?
+
+  roles RolePermission[]
+
+  createdAt DateTime @default(now())
+}
+
+model Role {
+  id String @id @default(uuid())
+
+  companyId String?
+
+  name String
+
+  description String?
+
+  isSystemRole Boolean @default(false)
+
+  company Company? @relation(fields: [companyId],references: [id],onDelete: Cascade)
+
+  permissions RolePermission[]
+
+  users UserRole[]
+
+  @@unique([companyId, name])
+}
+
+model UserRole {
+
+  id String @id @default(uuid())
+
+  userId String
+
+  roleId String
+
+
+  user User @relation(fields: [userId],references: [id],onDelete: Cascade)
+
+  role Role @relation(fields: [roleId],references: [id],onDelete: Cascade)
+
+  @@unique([userId, roleId])
+}
+
+model RolePermission {
+
+  id String @id @default(uuid())
+
+  roleId String
+
+  permissionId String
+
+
+  role Role @relation(fields:[roleId],references:[id],onDelete: Cascade)
+
+  permission Permission @relation(fields:[permissionId],references:[id],onDelete: Cascade)
+
+  @@unique([roleId, permissionId])
+
 }
 
 enum BusinessType {
