@@ -8,23 +8,127 @@ datasource db {
 }
 
 model Company {
-  id        String   @id @default(uuid())
-  name      String
+  id String @id @default(uuid())
+
+  name String
+
+  businessType BusinessType
+
+  email String?
+
+  phone String?
+
+  website String?
+
+  timezone String @default("America/Denver")
+
+  status CompanyStatus @default(ACTIVE)
+
+  subscriptionPlan SubscriptionPlan @default(TRIAL)
+
+  stripeCustomerId String?
+
+  quickbooksRealmId String?
+
   createdAt DateTime @default(now())
 
+  updatedAt DateTime @updatedAt
+
   users User[]
+
+  @@index([businessType])
+  @@index([status])
 }
 
 model User {
-  id           String @id @default(uuid())
-  email        String @unique
-  firstName    String
-  lastName     String
+  id String @id @default(uuid())
+
+  // Authentication
+
+  email String @unique
+
   passwordHash String
+
+  // Profile Information
+
+  firstName String
+
+  lastName String
+
+  phone String?
+
+  // Company Relationship
 
   companyId String
 
   company Company @relation(fields: [companyId], references: [id])
 
+  // Account Management
+
+  status UserStatus @default(ACTIVE)
+
+  emailVerified Boolean @default(false)
+
+  lastLoginAt DateTime?
+
+  // Security
+
+  failedLoginAttempts Int @default(0)
+
+  lockedUntil DateTime?
+
+  // Audit
+
   createdAt DateTime @default(now())
+
+  updatedAt DateTime @updatedAt
+
+  @@index([companyId])
+  @@index([status])
+  @@index([email])
+}
+
+enum BusinessType {
+  JUNK_REMOVAL
+
+  HVAC
+
+  PLUMBING
+
+  ELECTRICAL
+
+  LANDSCAPING
+
+  CLEANING
+
+  GENERAL_SERVICE
+
+  OTHER
+}
+
+enum CompanyStatus {
+  ACTIVE
+
+  SUSPENDED
+
+  CANCELLED
+
+  TRIAL
+}
+
+enum SubscriptionPlan {
+  TRIAL
+  STARTER
+  PROFESSIONAL
+  ENTERPRISE
+}
+
+enum UserStatus {
+  ACTIVE
+
+  INVITED
+
+  SUSPENDED
+
+  DISABLED
 }
