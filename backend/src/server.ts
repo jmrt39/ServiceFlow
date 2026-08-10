@@ -8,6 +8,9 @@ import { errorHandler } from "./middleware/errorHandler.js";
 
 import { prisma } from "./database/prisma.js";
 
+import authRoutes 
+from "./modules/auth/auth.routes.js";
+
 
 const app = express();
 
@@ -40,6 +43,11 @@ app.use(notFound);
 
 //Global Error Handler
 app.use(errorHandler);
+
+app.use(
+    "/api/auth",
+    authRoutes
+);
 
 
 // Start Server
