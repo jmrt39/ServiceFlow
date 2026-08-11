@@ -77,11 +77,12 @@ export async function registerUser(
     catch(error){
 
 
+         console.error("REGISTRATION ERROR:", error);
+
         res.status(400).json({
-
-        message:
-        (error as Error).message
-
+            message: error instanceof Error
+            ? error.message
+            : "Registration failed"
         });
 
 
