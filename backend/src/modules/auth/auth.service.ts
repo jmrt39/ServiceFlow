@@ -1,5 +1,6 @@
 import bcrypt from "bcrypt";
 import { prisma } from "../../lib/prisma.js";
+import jwt from 'jsonwebtoken';
 
 interface RegisterInput {
   companyName: string;
@@ -7,6 +8,92 @@ interface RegisterInput {
   lastName: string;
   email: string;
   password: string;
+}
+
+interface LoginInput {
+  email: string;
+  password: string;
+}
+
+export async function login(data: LoginInput){
+    if(!data.email || !data.password){
+        throw new Error("Email and Password are required");
+    }
+
+    const user = await prisma.user.findUnique({
+        where: {
+            email: data.email,
+        },
+    });
+
+    if(!user) {
+        throw new Error("Invalid email or password");
+    }
+
+    if(user.status !== "ACTIVE"){
+        throw new Error("Account is not active");
+    }
+
+    const passwordValid = await bcrypt.compare(
+        data.password,
+        user.passwordHash
+    );
+
+    if(!passwordValid){
+        throw new Error("Invalid email or password")
+    }
+
+    const userRoles = await prisma.userRole.findMany({
+        where: {
+            userId: user.id,
+        },
+        include: {
+            role: {
+                include: {
+                    permissions: {
+                        include: {
+                            permission: true
+                        }
+                    }
+                }
+            }
+        }
+    });
+
+    const permissions = userRoles.flatMap(
+        userRole => 
+                userRole.role.permissions.map(
+                    rolePermission => rolePermission.permission.name
+                )
+    );
+
+    const payload = {
+        userId: user.id,
+        companyId: user.companyId
+    }
+
+    const token = jwt.sign(
+        {
+            userId: user.id,
+            companyId: user.companyId,
+        },
+        process.env.JWT_SECRET!,
+        {
+            expiresIn: "1h",
+        }
+    );
+
+    return {
+        token, 
+        user: {
+            id: user.id,
+            email: user.email,
+            firstName: user.firstName,
+            lastName: user.lastName,
+            companyId: user.companyId
+        },
+        permissions
+    }
 }
 
 export async function register(data: RegisterInput) {

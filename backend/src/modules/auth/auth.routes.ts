@@ -1,6 +1,7 @@
 import {Router} from "express";
 
 import {
+    loginController,
 registerUser
 } from "./auth.controller.js";
 
@@ -14,6 +15,8 @@ router.post(
     "/register",
     registerUser
 );
+
+router.post("/login", loginController);
 
 
 
